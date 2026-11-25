@@ -639,7 +639,7 @@
       { id: 'L2', name: '晶片', companies: '7 家', rev: 3950, revYoY: '+176%', revComp: '7/7', gm: 73.1, gmStr: '73.1%', gmYoY: '+10.2 pp', nm: 50.9, nmStr: '50.9%', nmYoY: '+5.5 pp', fcf: 1063, fcfStr: '1,063', fcfYoY: '+213%', capex: 544, capexStr: '544', capexYoY: '+74%', outlook: '上修 2', origLight: '↗ 偏多', qualityStatus: 'pass', qualityCheck: '通過（超高毛利、FCF 暴增 +213%）', revisedJudge: '利潤核心（強偏多）', badgeClass: 'badge-exceed' },
       { id: 'L1', name: '能源', companies: '6 家', rev: 456, revYoY: '+26%', revComp: '5/6', gm: 28.8, gmStr: '28.8%', gmYoY: '+1.8 pp', nm: 22.2, nmStr: '22.2%', nmYoY: '+7.2 pp', fcf: 103, fcfStr: '103', fcfYoY: '+135%', capex: 26.1, capexStr: '26.1', capexYoY: '+105%', outlook: '上修 3・維持 1', origLight: '↗ 偏多', qualityStatus: 'pass', qualityCheck: '通過（毛利淨利雙升、FCF 大增）', revisedJudge: '穩健擴張（偏多）', badgeClass: 'badge-meet' }
     ];
-
+    let ALL_DUAL_TRACK = []
     let DUAL_TRACK = [
       { id: 'L0', name: 'L0 弱訊號入口', group: '主鏈', w47: '◐ 觀察', w48: '◐ 觀察', changed: false, reason: '不變', fact: '無一手弱訊號', radar: '警戒', signal: 'TrendForce 11-19：中國 CSP 削減 2027 企業級 SSD 訂單', proxy: '成本曲線破壞者掃描' },
       { id: 'L1', name: 'L1 終端需求', group: '主鏈', w47: '● 符合', w48: '▲ 超越', changed: true, reason: '因規則修正（v2.1 >70%）', fact: 'NVDA DC 1,076 億 (+110% YoY)', radar: '正常（口徑偏批發）', signal: 'Anthropic IPO 定價 $83、規模 813.4 億', proxy: '升級追蹤：四大雲廠 AI 增量收入 vs CapEx ROI' },
@@ -786,6 +786,11 @@
       });
       selectQuadrant(activeQ);
     }
+    if (ALL_DUAL_TRACK.length > 0) {
+        const matched = ALL_DUAL_TRACK.filter(x => x.period === periodKey);
+        DUAL_TRACK = matched.length > 0 ? matched : ALL_DUAL_TRACK.filter(x => x.period === PERIODS_LIST[0].key);
+        renderDualTrack();
+      }
 
     function selectQuadrant(qKey) {
       document.querySelectorAll('.quadrant-box').forEach(box => {
@@ -1157,9 +1162,11 @@
       }
 
       if (Array.isArray(data.monitor) && data.monitor.length) {
-        DUAL_TRACK = data.monitor.map(m => ({
+        ALL_DUAL_TRACK = data.monitor.map(m => ({
+          period: m['期數鍵'] || '2026-W48',
           id: m['層級ID'], name: m['層級名稱'], group: m['分組'],
-          w47: m['[稽核]W47燈號'], w48: m['[稽核]W48燈號'],
+          w47: m['[稽核]前期燈號'] || m['[稽核]W47燈號'],
+          w48: m['[稽核]本期燈號'] || m['[稽核]W48燈號'],
           changed: !String(m['[稽核]變色原因'] || '').startsWith('不變'),
           reason: m['[稽核]變色原因'], fact: m['[稽核]一手事實摘要'],
           radar: m['[決策]領先雷達狀態'], signal: m['[決策]領先訊號與邊際變化(含研調/市場)'],
