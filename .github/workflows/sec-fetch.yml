@@ -1,0 +1,28 @@
+name: Weekly SEC EDGAR Fetch
+
+on:
+  schedule:
+    # 台北時間每週一 06:05（UTC 週日 22:05）
+    - cron: '5 22 * * 0'
+  workflow_dispatch: # 支援手動一鍵試跑
+
+jobs:
+  fetch-sec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch 15 SEC EDGAR filings and push to Google Sheets
+        env:
+          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+          GAS_POST_TOKEN: ${{ secrets.GAS_POST_TOKEN }}
+        run: python3 scripts/fetch_sec.py
+
+      - name: Archive raw SEC JSONs as private Artifact (90 days)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sec-cache-${{ github.run_id }}
+          path: sec_cache/
+          retention-days: 90
