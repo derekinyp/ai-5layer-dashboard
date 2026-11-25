@@ -1,417 +1,1304 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="dark">
+<html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>研究戰情室</title>
+  <title>AI 五層蛋糕產業鏈財務儀表板｜雙軌監測與體制羅盤</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --bg: #0b0f17;
-      --surface: #121826;
-      --surface-2: #1a2234;
-      --border: #253047;
-      --text: #e6edf7;
-      --muted: #94a3b8;
-      --accent: #3b82f6;
-      --ok: #10b981; --ok-bg: rgba(16,185,129,.14);
-      --up: #3b82f6; --up-bg: rgba(59,130,246,.16);
-      --off: #ef4444; --off-bg: rgba(239,68,68,.16);
-      --watch: #f59e0b; --watch-bg: rgba(245,158,11,.16);
-      --na: #64748b; --na-bg: rgba(100,116,139,.18);
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
-    }
-    [data-theme="light"] {
-      --bg: #f4f6f9;
-      --surface: #ffffff;
-      --surface-2: #f8fafc;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #2563eb;
-      --ok: #059669; --ok-bg: #d1fae5;
-      --up: #1d4ed8; --up-bg: #dbeafe;
-      --off: #dc2626; --off-bg: #fee2e2;
-      --watch: #b45309; --watch-bg: #fef3c7;
-      --na: #475569; --na-bg: #e2e8f0;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
-    .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-
-    .topbar {
-      position: sticky; top: 0; z-index: 30;
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-    }
-    .brand { font-weight: 800; font-size: 15px; letter-spacing: .02em; display: flex; align-items: center; gap: 8px; }
-    .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tab {
-      background: transparent; color: var(--muted); border: 1px solid transparent;
-      padding: 6px 12px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600;
-    }
-    .tab:hover { color: var(--text); background: var(--surface-2); }
-    .tab.active { background: var(--accent); color: #fff; }
-    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
-    .btn-icon {
-      background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
-      padding: 5px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px;
+      --bg-page: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --border-subtle: #E2E8F0;
+      --ink-primary: #0F172A;
+      --ink-secondary: #475569;
+      --ink-muted: #64748B;
+      /* 判定語意配色 */
+      --status-exceed-text: #1D4ED8;
+      --status-exceed-bg: #EFF6FF;
+      --status-exceed-border: #BFDBFE;
+      --status-meet-text: #15803D;
+      --status-meet-bg: #F0FDF4;
+      --status-meet-border: #BBF7D0;
+      --status-watch-text: #C2410C;
+      --status-watch-bg: #FFF7ED;
+      --status-watch-border: #FED7AA;
+      --status-deviate-text: #B91C1C;
+      --status-deviate-bg: #FEF2F2;
+      --status-deviate-border: #FECACA;
+      --status-na-text: #475569;
+      --status-na-bg: #F1F5F9;
+      --status-na-border: #CBD5E1;
+      /* 台股漲跌慣例：紅漲綠跌 */
+      --tw-up: #DC2626;
+      --tw-down: #16A34A;
     }
 
-    .wrap { max-width: 1280px; margin: 0 auto; padding: 20px; }
-    .view { display: none; }
-    .view.active { display: block; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-
-    .card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 18px 20px; margin-bottom: 16px;
+    body {
+      font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--ink-primary);
+      -webkit-font-smoothing: antialiased;
     }
-    .card-title { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .card-sub { margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
-    .kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
 
-    .pill {
-      display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px;
-      border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap;
-    }
-    .p-ok { background: var(--ok-bg); color: var(--ok); }
-    .p-up { background: var(--up-bg); color: var(--up); }
-    .p-off { background: var(--off-bg); color: var(--off); }
-    .p-watch { background: var(--watch-bg); color: var(--watch); }
-    .p-na { background: var(--na-bg); color: var(--na); }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
 
-    .quad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .quad {
-      border: 1px solid var(--border); border-radius: 10px; padding: 12px;
-      background: var(--surface-2); opacity: .55; transition: .2s;
+    .badge-exceed {
+      color: var(--status-exceed-text);
+      background-color: var(--status-exceed-bg);
+      border: 1px solid var(--status-exceed-border);
     }
-    .quad.now { opacity: 1; border-color: var(--watch); box-shadow: 0 0 0 1px var(--watch); background: var(--watch-bg); }
-    .quad h4 { margin: 0 0 4px; font-size: 13px; }
-    .quad p { margin: 0; font-size: 12px; color: var(--muted); }
+    .badge-meet {
+      color: var(--status-meet-text);
+      background-color: var(--status-meet-bg);
+      border: 1px solid var(--status-meet-border);
+    }
+    .badge-watch {
+      color: var(--status-watch-text);
+      background-color: var(--status-watch-bg);
+      border: 1px solid var(--status-watch-border);
+    }
+    .badge-deviate {
+      color: var(--status-deviate-text);
+      background-color: var(--status-deviate-bg);
+      border: 1px solid var(--status-deviate-border);
+    }
+    .badge-na {
+      color: var(--status-na-text);
+      background-color: var(--status-na-bg);
+      border: 1px solid var(--status-na-border);
+    }
 
-    .tbl-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-    th { background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
-    tr.clickable { cursor: pointer; transition: background .15s; }
-    tr.clickable:hover { background: var(--surface-2); }
-    .sub-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-    .sub-tab {
-      background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
-      padding: 6px 14px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; font-weight: 600;
-    }
-    .sub-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tw-up { color: var(--tw-up); }
+    .tw-down { color: var(--tw-down); }
 
-    .drawer-mask {
-      position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50;
-      display: none; justify-content: flex-end;
+    .tab-btn {
+      border-bottom: 2px solid transparent;
+      color: var(--ink-secondary);
+      transition: color 0.15s ease, border-color 0.15s ease;
     }
-    .drawer-mask.open { display: flex; }
-    .drawer {
-      width: min(480px, 92vw); height: 100%; background: var(--surface);
-      border-left: 1px solid var(--border); padding: 22px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 14px;
+    .tab-btn:hover { color: var(--ink-primary); }
+    .tab-btn.active {
+      color: #0F172A;
+      border-bottom-color: #0F172A;
+      font-weight: 600;
     }
-    .drawer-hd { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-    .drawer-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-    .drawer-box h5 { margin: 0 0 6px; font-size: 12px; color: var(--muted); letter-spacing: .05em; }
-    .drawer-box p { margin: 0; font-size: 13.5px; }
 
-    .loading { text-align: center; padding: 60px 20px; color: var(--muted); }
-    .footer-disc { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+    .cake-layer-btn {
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .cake-layer-btn.selected {
+      border-color: #0F172A;
+      background-color: #F1F5F9;
+    }
+
+    .quadrant-box {
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .quadrant-box.active-q {
+      border-color: #B91C1C;
+      background-color: #FEF2F2;
+    }
+    .quadrant-box.selected-q {
+      outline: 2px solid #0F172A;
+      outline-offset: -2px;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body>
-  <header class="topbar">
-    <div class="brand"><span class="brand-dot"></span> AI 產業盡調戰情室</div>
-    <nav class="tabs" id="nav-tabs">
-      <button class="tab active" data-view="home">戰情首頁</button>
-      <button class="tab" data-view="monitor">雙軌監測台</button>
-      <button class="tab" data-view="ruler">基準尺 v2.2</button>
-      <button class="tab" data-view="sources">一手快取清冊</button>
-    </nav>
-    <div class="topbar-right">
-      <span id="sync-time">連線資料庫中…</span>
-      <button class="btn-icon" id="refresh-btn">重新整理</button>
-      <button class="btn-icon" id="theme-btn">淺色／深色</button>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 頂部識別列（隨頁面捲動，不凍結） -->
+  <header class="bg-white border-b border-slate-100">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-slate-900 text-white rounded">AI 產業盡調雙軌系統</span>
+          <span id="hdr-period-badge" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 rounded tabular-nums">期數 2026-W48</span>
+          <span id="hdr-rule-badge" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded">稽核尺 v2.1 → W49 切換 v2.2</span>
+        </div>
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900 mt-1 tracking-tight">AI 五層蛋糕產業鏈財務與雙軌監測儀表板</h1>
+      </div>
+      <div class="text-xs text-slate-500 sm:text-right tabular-nums">
+        <div id="hdr-range">覆蓋期間：2026-11-17 ～ 11-23</div>
+        <div id="sync-status">資料來源：內建快照（載入雲端中…）</div>
+      </div>
     </div>
   </header>
 
-  <main class="wrap">
-    <div id="loading" class="loading">正在從雲端「00_核心資料庫」讀取即時數據…</div>
+  <!-- 精簡單行分頁列 ＋ 每週期數下拉選單（吸頂） -->
+  <div class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
+      <nav aria-label="儀表板分頁" class="flex items-center gap-5 overflow-x-auto no-scrollbar -mb-px">
+        <button type="button" class="tab-btn active py-2.5 text-sm whitespace-nowrap" data-tab="overview">總覽與體制羅盤</button>
+        <button type="button" class="tab-btn py-2.5 text-sm whitespace-nowrap" data-tab="cake">五層蛋糕財務</button>
+        <button type="button" class="tab-btn py-2.5 text-sm whitespace-nowrap" data-tab="dualtrack">雙軌監測（13列）</button>
+        <button type="button" class="tab-btn py-2.5 text-sm whitespace-nowrap" data-tab="baseline">基準尺 v2.2</button>
+        <button type="button" class="tab-btn py-2.5 text-sm whitespace-nowrap" data-tab="calendar">查核日曆與來源</button>
+      </nav>
 
-    <section id="view-home" class="view">
-      <div class="grid-2">
-        <div class="card">
-          <div class="kicker">最新期數與核心判讀（稽核系統）</div>
-          <h2 class="card-title" id="home-issue">—</h2>
-          <p id="home-headline" style="font-size:15px;font-weight:600;margin:8px 0 12px;">—</p>
-          <div id="home-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
-          <div class="drawer-box">
-            <h5>決策引擎｜行動框架</h5>
-            <p id="home-action">—</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="kicker">市場體制羅盤（決策引擎四象限）</div>
-          <h2 class="card-title" id="home-regime-title">—</h2>
-          <div class="quad-grid" id="quad-grid">
-            <div class="quad" data-q="實體強 × 金融順"><h4>① 實體強 × 金融順</h4><p>主升擴張期：抱緊核心龍頭與瓶頸層</p></div>
-            <div class="quad" data-q="實體強 × 金融緊"><h4>② 實體強 × 金融緊</h4><p>估值壓縮／去槓桿期：嚴控槓桿、提防信用斷裂</p></div>
-            <div class="quad" data-q="實體弱 × 金融順"><h4>③ 實體弱 × 金融順</h4><p>流動性撐盤／基本面背離期：警戒假反彈</p></div>
-            <div class="quad" data-q="實體弱 × 金融緊"><h4>④ 實體弱 × 金融緊</h4><p>全面防禦期：保本優先、降曝險</p></div>
-          </div>
-        </div>
+      <!-- 每週期數下拉式選單 -->
+      <div class="flex items-center gap-2 py-1.5 shrink-0">
+        <label for="period-select" class="hidden sm:inline text-xs font-medium text-slate-500">週報期數</label>
+        <select id="period-select" aria-label="選擇週報期數" class="text-xs font-semibold text-slate-800 bg-slate-50 border border-slate-300 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-slate-900 tabular-nums cursor-pointer">
+          <option value="2026-W48">2026-W48（最新）</option>
+          <option value="2026-W47">2026-W47</option>
+        </select>
+        <button type="button" id="btn-refresh" title="重新從 00_核心資料庫 同步" class="px-2 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-md hover:bg-slate-50 hover:text-slate-900">
+          ↻
+        </button>
       </div>
-
-      <div class="grid-2">
-        <div class="card">
-          <h3 class="card-title">雙軌背離與預警焦點 <span class="pill p-off">決策雷達優先</span></h3>
-          <p class="card-sub">列出「稽核未亮紅，但決策雷達已預警」或「雙軌皆偏離」的關鍵層級（點擊列看證據）</p>
-          <div class="tbl-wrap"><table id="tbl-alerts"></table></div>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">近期查核日曆與打臉條件 <span class="pill p-watch">事前鎖定</span></h3>
-          <p class="card-sub">資料來源：05_查核日曆與打臉條件（台北時間 GMT+8）</p>
-          <div class="tbl-wrap"><table id="tbl-checkpoints"></table></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="view-monitor" class="view">
-      <div class="sub-tabs">
-        <button class="sub-tab active" data-sub="chain">八層因果鏈（稽核 × 決策雙軌）</button>
-        <button class="sub-tab" data-sub="cake">AI 五層蛋糕（財務 × 現金流品質）</button>
-      </div>
-
-      <div id="sub-chain" class="card">
-        <h3 class="card-title">八層因果鏈＋側軌雙軌監測（2026-W48）</h3>
-        <p class="card-sub">左側為「產業稽核系統（嚴格一手＋規則留痕）」，右側為「投資決策引擎（領先雷達＋升級代理指標）」。點擊任一列展開右側證據抽屜。</p>
-        <div class="tbl-wrap"><table id="tbl-monitor"></table></div>
-      </div>
-
-      <div id="sub-cake" class="card" style="display:none;">
-        <h3 class="card-title">AI 五層蛋糕財務矩陣（含現金流品質否決檢核）</h3>
-        <p class="card-sub">保留原始 AI 專項營收與全公司財務口徑，並加入決策引擎「現金流品質否決權」，避免負 FCF 層級誤判為單純偏多。</p>
-        <div class="tbl-wrap"><table id="tbl-cake"></table></div>
-      </div>
-    </section>
-
-    <section id="view-ruler" class="view">
-      <div class="card">
-        <h3 class="card-title">現行基準預期表 v2.2（W49 起適用）× 升級代理指標</h3>
-        <p class="card-sub">已刊 2026-W48 維持按 v2.1 判定不回溯；右側並列決策引擎採用的高頻升級代理指標。</p>
-        <div class="tbl-wrap"><table id="tbl-ruler"></table></div>
-      </div>
-    </section>
-
-    <section id="view-sources" class="view">
-      <div class="card">
-        <h3 class="card-title">一手來源快取與 SHA-256 稽核清冊</h3>
-        <p class="card-sub">所有原始文件存放於私密 Google Drive「99_一手來源快取_不公開」，與公開網頁完全隔離。</p>
-        <div class="tbl-wrap"><table id="tbl-sources"></table></div>
-      </div>
-    </section>
-
-    <footer class="footer-disc">
-      免責聲明：以上內容基於公開資料和量化分析，僅供參考，不構成投資建議。市場有風險，投資需謹慎。任何投資決策應結合個人風險承受能力、資金狀況和投資目標獨立判斷，必要時諮詢持牌專業機構。過往表現不預示未來收益。
-    </footer>
-  </main>
-
-  <div class="drawer-mask" id="drawer-mask">
-    <aside class="drawer">
-      <div class="drawer-hd">
-        <div>
-          <div class="kicker" id="d-group">—</div>
-          <h3 style="margin:0;" id="d-title">—</h3>
-        </div>
-        <button class="btn-icon" id="d-close">✕ 關閉</button>
-      </div>
-      <div id="d-body" style="display:flex;flex-direction:column;gap:12px;"></div>
-    </aside>
+    </div>
   </div>
 
-  <script>
-    // ★ 請將下方引號內換成你的 Apps Script 網頁應用程式網址（結尾為 /exec）
-    const API_URL =' https://script.google.com/macros/s/AKfycbwyEsx_kcGQtBm_MGrTpCQJrN2GJihUzd1jMB2TQcBzyJ9tanqOJCtzYDdJ2yvmkCE/exec';
+  <!-- 主內容區 -->
+  <main class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 space-y-4">
 
-    let STATE = null;
+    <!-- ==================== TAB 1: 總覽與體制羅盤 ==================== -->
+    <section id="tab-overview" class="tab-panel space-y-6">
 
-    function tonePill(text) {
-      if (!text) return '<span class="pill p-na">—</span>';
-      const s = String(text);
-      if (s.includes('偏離') || s.includes('紅燈') || s.includes('否決')) return `<span class="pill p-off">${s}</span>`;
-      if (s.includes('超越') || s.includes('強偏多')) return `<span class="pill p-up">${s}</span>`;
-      if (s.includes('觀察') || s.includes('警戒') || s.includes('黃燈') || s.includes('燒錢')) return `<span class="pill p-watch">${s}</span>`;
-      if (s.includes('符合') || s.includes('正常') || s.includes('通過') || s.includes('穩健')) return `<span class="pill p-ok">${s}</span>`;
-      return `<span class="pill p-na">${s}</span>`;
-    }
-
-    function switchView(v) {
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('#nav-tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
-      const target = document.getElementById('view-' + v) || document.getElementById('view-home');
-      target.classList.add('active');
-    }
-
-    document.querySelectorAll('#nav-tabs .tab').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
-    document.querySelectorAll('.sub-tab').forEach(b => {
-      b.addEventListener('click', () => {
-        document.querySelectorAll('.sub-tab').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        document.getElementById('sub-chain').style.display = b.dataset.sub === 'chain' ? 'block' : 'none';
-        document.getElementById('sub-cake').style.display = b.dataset.sub === 'cake' ? 'block' : 'none';
-      });
-    });
-    document.getElementById('theme-btn').addEventListener('click', () => {
-      const root = document.documentElement;
-      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-    });
-    document.getElementById('refresh-btn').addEventListener('click', loadData);
-    document.getElementById('d-close').addEventListener('click', () => document.getElementById('drawer-mask').classList.remove('open'));
-    document.getElementById('drawer-mask').addEventListener('click', e => {
-      if (e.target.id === 'drawer-mask') e.target.classList.remove('open');
-    });
-
-    function openDrawer(row) {
-      const ruler = (STATE.rulers || []).find(r => r['層級'] === row['層級ID']) || {};
-      document.getElementById('d-group').textContent = (row['分組'] || '') + ' · ' + (row['層級ID'] || '');
-      document.getElementById('d-title').textContent = row['層級名稱'] || '';
-      document.getElementById('d-body').innerHTML = `
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <span>稽核：${tonePill(row['[稽核]W48燈號'])}</span>
-          <span>雷達：${tonePill(row['[決策]領先雷達狀態'])}</span>
+      <!-- 首屏結論先行卡片 -->
+      <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">首屏結論先行</span>
+            <span id="overview-regime-badge" class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded badge-deviate">★ 實體強 × 金融緊（估值壓縮／去槓桿期）</span>
+          </div>
+          <div id="overview-period-meta" class="text-xs text-slate-500 tabular-nums">
+            2026-W48（2026-11-17～11-23）
+          </div>
         </div>
-        <div class="drawer-box"><h5>[稽核系統] 一手事實與變色原因（W47：${row['[稽核]W47燈號'] || '—'}）</h5><p>${row['[稽核]一手事實摘要'] || '—'}<br><small style="color:var(--muted)">變色原因：${row['[稽核]變色原因'] || '—'}</small></p></div>
-        <div class="drawer-box"><h5>[決策引擎] 領先訊號與邊際變化</h5><p>${row['[決策]領先訊號與邊際變化(含研調/市場)'] || '—'}</p></div>
-        <div class="drawer-box"><h5>[決策引擎] 升級代理指標</h5><p>${row['[決策]升級代理指標追蹤'] || '—'}</p></div>
-        <div class="drawer-box"><h5>[基準尺 v2.2] 符合／偏離門檻</h5><p>符合／超越：${ruler['[稽核尺 v2.2]符合與超越門檻'] || '—'}<br>偏離紅燈：${ruler['[稽核尺 v2.2]偏離紅燈條件'] || '—'}</p></div>
-      `;
-      document.getElementById('drawer-mask').classList.add('open');
+
+        <div class="mt-4 space-y-3">
+          <p id="overview-headline" class="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+            龍頭實績再超指引，管制延伸到製造端；五列燈號因 v2.1 規則修正而變
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div class="bg-slate-50 border border-slate-200 rounded p-3">
+              <div class="text-xs font-semibold text-slate-500 mb-1">實體鏈動能（L1–L8）</div>
+              <div id="overview-physical" class="font-semibold text-slate-900">強（L1/L3/L6/L7a 超越）</div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded p-3">
+              <div class="text-xs font-semibold text-red-700 mb-1">金融與外生壓力</div>
+              <div id="overview-financial" class="font-semibold text-red-900">極緊（管制與反射性雙偏離；費半週跌 17.13%）</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded p-3">
+              <div class="text-xs font-semibold text-slate-500 mb-1">條件化決策框架</div>
+              <div id="overview-framework" class="font-medium text-slate-800">基本面未死但高估值承壓；嚴控槓桿、提防信用斷裂與毛利指引擦邊</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 13 列稽核燈號分佈 -->
+        <div class="mt-5 pt-4 border-t border-slate-100">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+            <span class="font-semibold text-slate-700">稽核燈號分佈（13 列：10 主鏈 ＋ 3 側軌）</span>
+            <span id="overview-rule-version" class="tabular-nums">判定尺：v2.1｜已凍結（不回溯）</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="rounded p-3 badge-exceed flex items-center justify-between">
+              <span class="text-xs font-semibold">▲ 超越預期</span>
+              <span id="cnt-exceed" class="text-xl font-bold tabular-nums">4</span>
+            </div>
+            <div class="rounded p-3 badge-meet flex items-center justify-between">
+              <span class="text-xs font-semibold">● 符合預期</span>
+              <span id="cnt-meet" class="text-xl font-bold tabular-nums">3</span>
+            </div>
+            <div class="rounded p-3 badge-watch flex items-center justify-between">
+              <span class="text-xs font-semibold">◐ 觀察</span>
+              <span id="cnt-watch" class="text-xl font-bold tabular-nums">4</span>
+            </div>
+            <div class="rounded p-3 badge-deviate flex items-center justify-between">
+              <span class="text-xs font-semibold">◆ 偏離示警</span>
+              <span id="cnt-deviate" class="text-xl font-bold tabular-nums">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 四象限體制羅盤 + 互動五層蛋糕結構 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 左：四象限市場體制羅盤 -->
+        <div class="lg:col-span-5 bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-bold text-slate-900">四象限市場體制羅盤</h2>
+              <span class="text-xs text-slate-500">點擊象限檢視條件框架</span>
+            </div>
+
+            <div class="relative pl-5 pb-5">
+              <div class="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 text-[11px] font-semibold text-slate-500 whitespace-nowrap origin-center -ml-6">
+                金融環境 (Y軸)
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="quadrant-box border border-slate-200 rounded p-3 bg-slate-50" data-quadrant="Q2">
+                  <div class="text-[11px] font-semibold text-slate-500">實體弱 × 金融順</div>
+                  <div class="text-xs font-bold text-slate-900 mt-0.5">流動性撐盤期</div>
+                  <div class="text-[11px] text-slate-500 mt-1">基本面背離警戒</div>
+                </div>
+                <div class="quadrant-box border border-slate-200 rounded p-3 bg-slate-50" data-quadrant="Q1">
+                  <div class="text-[11px] font-semibold text-slate-500">實體強 × 金融順</div>
+                  <div class="text-xs font-bold text-slate-900 mt-0.5">主升擴張期</div>
+                  <div class="text-[11px] text-slate-500 mt-1">基本面與資金共振</div>
+                </div>
+                <div class="quadrant-box border border-slate-200 rounded p-3 bg-slate-50" data-quadrant="Q3">
+                  <div class="text-[11px] font-semibold text-slate-500">實體弱 × 金融緊</div>
+                  <div class="text-xs font-bold text-slate-900 mt-0.5">全面防禦期</div>
+                  <div class="text-[11px] text-slate-500 mt-1">收縮與緊縮雙壓</div>
+                </div>
+                <div class="quadrant-box active-q selected-q border rounded p-3" data-quadrant="Q4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-semibold text-red-700">實體強 × 金融緊</span>
+                    <span id="q4-now-tag" class="text-[10px] font-bold px-1.5 py-0.5 bg-red-700 text-white rounded">當前</span>
+                  </div>
+                  <div class="text-xs font-bold text-red-900 mt-0.5">估值壓縮／去槓桿期</div>
+                  <div class="text-[11px] text-red-700 mt-1">實體強勁但估值殺盤</div>
+                </div>
+              </div>
+              <div class="text-center text-[11px] font-semibold text-slate-500 mt-2">
+                ← 結構轉弱 ｜ 實體動能 (X軸) ｜ 結構強勁 →
+              </div>
+            </div>
+          </div>
+
+          <div id="quadrant-detail" class="mt-2 bg-slate-50 border border-slate-200 rounded p-3 text-xs text-slate-700 leading-relaxed">
+            <span class="font-bold text-red-800">當前體制（實體強 × 金融緊）：</span>
+            若實體財報（NVDA/TSMC/設備）續強但融資信用與出口管制升溫，市場偏向估值壓縮與高貝塔去槓桿；宜嚴控槓桿、區分「高毛利印鈔池（L2 晶片）」與「負現金流資本消耗者（L3 基礎設施）」。
+          </div>
+        </div>
+
+        <!-- 右：互動式五層蛋糕結構堆疊 -->
+        <div class="lg:col-span-7 bg-white border border-slate-200 rounded-lg p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">AI 五層蛋糕財務結構（點擊任一層檢視品質否決權）</h2>
+              <p id="cake-summary-sub" class="text-xs text-slate-500 mt-0.5">涵蓋 32 家公司｜合計 AI 營收 7,571 億美元｜FCF 1,095 億 vs CapEx 2,984.1 億</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+            <div id="cake-stack-list" class="md:col-span-6 space-y-2"></div>
+            <div id="cake-detail-card" class="md:col-span-6 bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 本期三大核心判讀（事實 / 推論分標） -->
+      <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <h2 class="text-sm font-bold text-slate-900 mb-3">核心判讀（事實／推論分標）</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">
+          <div class="border border-slate-200 rounded p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900">1. 算力龍頭實績超標，但毛利斜率擦線</span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold">事實</span>
+            </div>
+            <p class="text-slate-700">
+              NVIDIA FY27Q3 營收 <strong class="tabular-nums">1,158.44 億</strong>美元（超指引中值 +7.3%）、DC 營收 <strong class="tabular-nums">1,076 億</strong>（YoY <span class="tw-up font-semibold">+110%</span>）、GAAP 毛利率 <strong class="tabular-nums">74.8%</strong>；但 Q4 毛利指引 <strong class="tabular-nums">71.0–72.0%</strong> 貼近 72% 打臉線（前瞻指標，須待 2027-02 下旬實際值驗證）。
+            </p>
+          </div>
+          <div class="border border-slate-200 rounded p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900">2. BIS 管制擴及製造端，信用與估值承壓</span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold">事實</span>
+            </div>
+            <p class="text-slate-700">
+              美國 BIS 臨時最終規則（<strong class="tabular-nums">91 FR 74970</strong>）11-19 生效，納管遠端算力、新增五國且代工／OSAT 須對 16/14nm 作推定；NVDA 一手揭露對 neocloud 提供 <strong class="tabular-nums">1,180 億</strong>保證；費半 11-20 單日 <span class="tw-down font-semibold">-10.73%</span>、週跌 <span class="tw-down font-semibold">-17.13%</span>。
+            </p>
+          </div>
+          <div class="border border-slate-200 rounded p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900">3. 五列變色屬規則修正，雙軌防盲點</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-semibold">推論</span>
+            </div>
+            <p class="text-slate-700">
+              W48 為 v2.1 首期，L1/L2/L5/L7b/L8 變色屬「因規則修正」而非基本面突變；L4（NAND 現貨回檔 &gt;20%）、L7b（光刻膠漲價）與 L8（電力瓶頸）在決策「領先雷達」仍維持紅燈預警，避免因一手潔癖錯失轉折。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 五層蛋糕財務 ==================== -->
+    <section id="tab-cake" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+          <div class="text-xs text-slate-500">涵蓋企業家數</div>
+          <div id="kpi-companies" class="text-2xl font-bold text-slate-900 mt-1 tabular-nums">32 家</div>
+          <div class="text-xs text-slate-500 mt-1">橫跨 L1 能源至 L5 應用</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+          <div class="text-xs text-slate-500">五層合計 AI 相關營收</div>
+          <div id="kpi-rev" class="text-2xl font-bold text-slate-900 mt-1 tabular-nums">$7,571 億</div>
+          <div class="text-xs text-slate-500 mt-1">L2 晶片佔比達 52.2%</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+          <div class="text-xs text-slate-500">全公司自由現金流 (FCF)</div>
+          <div id="kpi-fcf" class="text-2xl font-bold text-slate-900 mt-1 tabular-nums">$1,095 億</div>
+          <div class="text-xs text-red-700 font-medium mt-1">L3 基礎設施轉負 -$249 億</div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4">
+          <div class="text-xs text-slate-500">全公司資本支出 (CapEx)</div>
+          <div id="kpi-capex" class="text-2xl font-bold text-slate-900 mt-1 tabular-nums">$2,984.1 億</div>
+          <div class="text-xs text-slate-500 mt-1">CapEx 規模為 FCF 的 2.73 倍</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <h2 class="text-sm font-bold text-slate-900">各層財務規模與獲利能力對比</h2>
+            <div class="inline-flex items-center bg-slate-100 p-0.5 rounded border border-slate-200 text-xs">
+              <button type="button" class="cake-chart-mode px-2 py-1 rounded bg-white text-slate-900 font-semibold border border-slate-200" data-mode="revenue">AI 營收</button>
+              <button type="button" class="cake-chart-mode px-2 py-1 rounded text-slate-600" data-mode="margins">毛利／淨利率</button>
+            </div>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-cake-primary"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-bold text-slate-900">全公司 FCF vs CapEx 資本循環結構（億美元）</h2>
+            <span class="text-xs text-slate-500">L4 模型未提供</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="chart-cake-cashflow"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">五層蛋糕財務與現金流品質否決權檢核表</h2>
+            <p class="text-xs text-slate-500 mt-0.5">口徑說明：營收為 AI 相關口徑；毛利／淨利率為全公司加權；FCF 與 CapEx 為全公司加總（台股慣例：紅漲綠跌）。</p>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button type="button" class="cake-filter-btn px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-white" data-filter="all">全部 (5)</button>
+            <button type="button" class="cake-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200" data-filter="pass">通過 (2)</button>
+            <button type="button" class="cake-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200" data-filter="warn">否決／警戒 (2)</button>
+            <button type="button" class="cake-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200" data-filter="na">樣本不足 (1)</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">層級</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">AI 營收 (億)</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">營收 YoY</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">毛利率 (YoY)</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">淨利率 (YoY)</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">FCF (億 / YoY)</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap text-right">CapEx (億 / YoY)</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">原版燈號</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">決策引擎修正判定</th>
+              </tr>
+            </thead>
+            <tbody id="cake-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 雙軌監測 ==================== -->
+    <section id="tab-dualtrack" class="tab-panel hidden space-y-4">
+      <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">雙軌監測總表（10 主鏈 ＋ 3 側軌）</h2>
+            <p class="text-xs text-slate-500 mt-0.5">點擊任一列可展開完整「一手稽核事實 × 領先雷達 × v2.2 基準門檻與打臉條件」對照。</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="dt-search" placeholder="搜尋層級、關鍵字（如 NVDA、BIS、NAND）" class="w-full sm:w-64 px-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-none focus:border-slate-900" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+          <span class="text-slate-500 font-medium">分組：</span>
+          <select id="dt-group" class="border border-slate-300 rounded px-2 py-1 bg-white text-slate-800">
+            <option value="all">全部 (13)</option>
+            <option value="主鏈">主鏈 (10)</option>
+            <option value="側軌">側軌 (3)</option>
+          </select>
+
+          <span class="text-slate-500 font-medium ml-2">稽核燈號：</span>
+          <select id="dt-audit" class="border border-slate-300 rounded px-2 py-1 bg-white text-slate-800">
+            <option value="all">全部燈號</option>
+            <option value="超越">▲ 超越</option>
+            <option value="符合">● 符合</option>
+            <option value="觀察">◐ 觀察</option>
+            <option value="偏離">◆ 偏離</option>
+          </select>
+
+          <span class="text-slate-500 font-medium ml-2">領先雷達：</span>
+          <select id="dt-radar" class="border border-slate-300 rounded px-2 py-1 bg-white text-slate-800">
+            <option value="all">全部狀態</option>
+            <option value="紅燈預警">紅燈預警</option>
+            <option value="警戒">黃燈／警戒</option>
+            <option value="正常">正常</option>
+          </select>
+
+          <label class="inline-flex items-center gap-1.5 ml-auto cursor-pointer select-none text-slate-700 font-medium">
+            <input type="checkbox" id="dt-changed-only" class="rounded border-slate-300" />
+            僅看前期→本期變色列
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-500 px-1">
+        <span id="dt-count-label">顯示 13 / 13 列</span>
+        <button type="button" id="dt-reset-btn" class="text-slate-700 hover:text-slate-900 underline">重設篩選</button>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">層級</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">前期 → 本期稽核燈號</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">變色原因</th>
+                <th class="py-2.5 px-3 font-semibold">一手事實摘要</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">領先雷達</th>
+                <th class="py-2.5 px-3 font-semibold">邊際變化（研調／市場）</th>
+              </tr>
+            </thead>
+            <tbody id="dt-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: 基準尺 v2.2 ==================== -->
+    <section id="tab-baseline" class="tab-panel hidden space-y-4">
+      <div class="bg-white border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">基準預期表 v2.2（2026-11-23 核准，自 2026-W49 生效）</h2>
+          <p class="text-xs text-slate-500 mt-0.5">已刊 W48 維持 v2.1 不回溯；基準表僅供引用與條件化對照，任何修正須經正式協議核准。</p>
+        </div>
+        <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-800 cursor-pointer select-none bg-slate-50 border border-slate-200 px-3 py-1.5 rounded">
+          <input type="checkbox" id="bl-diff-only" class="rounded border-slate-300" />
+          僅顯示相對 v2.1 異動（Q1–Q4）
+        </label>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">層級</th>
+                <th class="py-2.5 px-3 font-semibold">監測指標（看什麼數字）</th>
+                <th class="py-2.5 px-3 font-semibold">符合與超越門檻</th>
+                <th class="py-2.5 px-3 font-semibold">偏離紅燈（打臉條件）</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">相對 v2.1 異動</th>
+                <th class="py-2.5 px-3 font-semibold">決策引擎升級代理指標</th>
+              </tr>
+            </thead>
+            <tbody id="bl-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: 查核日曆與來源 ==================== -->
+    <section id="tab-calendar" class="tab-panel hidden space-y-6">
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">關鍵查核日曆與打臉條件</h2>
+            <p class="text-xs text-slate-500 mt-0.5">預先定義改判門檻，避免事後敘事漂移。</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" class="cal-filter-btn px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-white" data-cal="all">全部</button>
+            <button type="button" class="cal-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200" data-cal="chain">主鏈事件</button>
+            <button type="button" class="cal-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200" data-cal="exo">外生事件</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">預計日期（台北）</th>
+                <th class="py-2.5 px-3 font-semibold">事件名稱</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">影響層級</th>
+                <th class="py-2.5 px-3 font-semibold">觀察指標</th>
+                <th class="py-2.5 px-3 font-semibold">打臉條件（成立即改判）</th>
+                <th class="py-2.5 px-3 font-semibold whitespace-nowrap">狀態</th>
+              </tr>
+            </thead>
+            <tbody id="cal-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 一手來源快取清冊 -->
+      <div class="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h2 class="text-sm font-bold text-slate-900">一手來源快取清冊與主控資料庫</h2>
+          <a href="https://docs.google.com/spreadsheets/d/1wKtf06EcjAZSZbEDWxTI9ttM874mF-m88or-SSUpCUk/edit" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-blue-700 hover:underline">
+            開啟 Google Sheets「00_核心資料庫」↗
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="py-2 px-3 font-semibold whitespace-nowrap">取得時間</th>
+                <th class="py-2 px-3 font-semibold whitespace-nowrap">期數／層級</th>
+                <th class="py-2 px-3 font-semibold">來源名稱與原始連結</th>
+                <th class="py-2 px-3 font-semibold">備註</th>
+              </tr>
+            </thead>
+            <tbody id="src-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 頁尾免責聲明 -->
+  <footer class="bg-white border-t border-slate-200 mt-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div>
+        <strong>免責聲明：</strong>以上內容基於公開資料和量化分析，僅供參考，不構成投資建議。市場有風險，投資需謹慎。任何投資決策應結合個人風險承受能力、資金狀況和投資目標獨立判斷，必要時諮詢持牌專業機構。過往表現不預示未來收益。
+      </div>
+      <div class="whitespace-nowrap tabular-nums text-slate-400">
+        ai-semi-diligence｜v2.2 / Dual-Track
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ★ 請將下方引號內替換為你的 Apps Script /exec 網址（務必保留前後單引號！）
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwyEsx_kcGQtBm_MGrTpCQJrN2GJihUzd1jMB2TQcBzyJ9tanqOJCtzYDdJ2yvmkCE/exec';
+
+    // ==================== 內建保底資料（即時連線成功後會自動覆蓋為雲端最新） ====================
+    let PERIODS_LIST = [
+      {
+        key: '2026-W47',
+        range: '2026-11-17～11-23',
+        ruleShort: 'v2.1 (W49起切換v2.2)',
+        rule: '判定尺：v2.1（W49 起切換 v2.2）｜已凍結（不回溯）',
+        regime: '實體強 × 金融緊（估值壓縮／去槓桿期）',
+        headline: '龍頭實績再超指引，管制延伸到製造端；五列燈號因 v2.1 規則修正而變',
+        physical: '強（L1/L3/L6/L7a 超越）',
+        financial: '極緊（管制與反射性雙偏離；費半週跌 17.13%）',
+        framework: '基本面未死但高估值承壓；嚴控槓桿、提防信用斷裂與毛利指引擦邊',
+        counts: { exceed: 4, meet: 3, watch: 4, deviate: 2 }
+      },
+      {
+        key: '2026-W47',
+        range: '2026-11-11～11-16',
+        ruleShort: 'v1.1',
+        rule: '判定尺：v1.1｜已凍結（不回溯）',
+        regime: '實體強 × 金融緊（估值壓縮／去槓桿期）',
+        headline: '八層判定不變，風險集中側軌（管制與反射性質變）',
+        physical: '強（6 列超越）',
+        financial: '緊（管制轉紅、反射性惡化）',
+        framework: '風險集中側軌；等待 11-18 NVDA 財報與 11-19 BIS 生效',
+        counts: { exceed: 6, meet: 2, watch: 1, deviate: 4 }
+      }
+    ];
+
+    const QUADRANTS = {
+      Q1: {
+        title: '象限 I｜主升擴張期（實體強 × 金融順）',
+        desc: '若八層實體主鏈持續超越預期且利率／管制／信用維持順風，產業處於基本面與資金共振階段；重點關注核心瓶頸（晶圓代工、先進封裝、設備）之產能利用率與毛利擴張斜率。'
+      },
+      Q2: {
+        title: '象限 II｜流動性撐盤期（實體弱 × 金融順）',
+        desc: '若實體財報動能轉弱但市場流動性仍充裕，行情易呈現基本面背離；須嚴密檢視終端變現 ROI 與庫存週轉天數（DIO），防範估值脫鉤風險。'
+      },
+      Q3: {
+        title: '象限 III｜全面防禦期（實體弱 × 金融緊）',
+        desc: '若實體需求收縮與金融緊縮同時成立，系統進入全面防禦體制；優先檢視企業現金流緩衝與負債到期結構，等待庫存去化與資本開支落底訊號。'
+      },
+      Q4: {
+        title: '象限 IV｜估值壓縮／去槓桿期（實體強 × 金融緊）',
+        desc: '若實體財報（NVDA/TSMC/設備）續強但融資信用與出口管制升溫，市場偏向估值壓縮與高貝塔去槓桿；宜嚴控槓桿、區分「高毛利印鈔池（L2 晶片）」與「負現金流資本消耗者（L3 基礎設施）」。'
+      }
+    };
+
+    let CAKE_LAYERS = [
+      { id: 'L5', name: '應用', companies: '6 家', rev: 663, revYoY: '+14%', revComp: '5/6', gm: 70.0, gmStr: '70.0%', gmYoY: '-1.3 pp', nm: 35.4, nmStr: '35.4%', nmYoY: '+4.5 pp', fcf: 178, fcfStr: '178', fcfYoY: '-38%', capex: 682, capexStr: '682', capexYoY: '+142%', outlook: '上修 3・維持 1', origLight: '↗ 偏多', qualityStatus: 'warn', qualityCheck: '黃燈警告（營收僅 +14%、FCF 減 38%、CapEx 暴增 142%）', revisedJudge: '溫和變現（資本效率轉弱）', badgeClass: 'badge-watch' },
+      { id: 'L4', name: '模型', companies: '3 家', rev: 170, revYoY: '+1127%', revComp: '1/3', gm: null, gmStr: '未提供', gmYoY: '無可比', nm: -137.4, nmStr: '-137.4%', nmYoY: '+740.9 pp', fcf: null, fcfStr: '未提供', fcfYoY: '無可比', capex: null, capexStr: '未提供', capexYoY: '無可比', outlook: '3 家未提供', origLight: '○ 不判', qualityStatus: 'na', qualityCheck: '樣本不足（僅 1/3 家可比，巨額虧損）', revisedJudge: '早期燒錢（不判／低覆蓋）', badgeClass: 'badge-na' },
+      { id: 'L3', name: '基礎設施', companies: '10 家', rev: 2332, revYoY: '+87%', revComp: '10/10', gm: 41.0, gmStr: '41.0%', gmYoY: '-2.9 pp', nm: 14.4, nmStr: '14.4%', nmYoY: '-3.1 pp', fcf: -249, fcfStr: '-249', fcfYoY: '-145%', capex: 1732, capexStr: '1,732', capexYoY: '+113%', outlook: '上修 3・維持 2・下修 1（2 家未提供）', origLight: '↗ 偏多', qualityStatus: 'warn', qualityCheck: '否決警告（FCF 轉負 -249 億、CapEx 暴衝 1,732 億、雙率下滑）', revisedJudge: '擴張但重度燒錢（高資本風險）', badgeClass: 'badge-deviate' },
+      { id: 'L2', name: '晶片', companies: '7 家', rev: 3950, revYoY: '+176%', revComp: '7/7', gm: 73.1, gmStr: '73.1%', gmYoY: '+10.2 pp', nm: 50.9, nmStr: '50.9%', nmYoY: '+5.5 pp', fcf: 1063, fcfStr: '1,063', fcfYoY: '+213%', capex: 544, capexStr: '544', capexYoY: '+74%', outlook: '上修 2', origLight: '↗ 偏多', qualityStatus: 'pass', qualityCheck: '通過（超高毛利、FCF 暴增 +213%）', revisedJudge: '利潤核心（強偏多）', badgeClass: 'badge-exceed' },
+      { id: 'L1', name: '能源', companies: '6 家', rev: 456, revYoY: '+26%', revComp: '5/6', gm: 28.8, gmStr: '28.8%', gmYoY: '+1.8 pp', nm: 22.2, nmStr: '22.2%', nmYoY: '+7.2 pp', fcf: 103, fcfStr: '103', fcfYoY: '+135%', capex: 26.1, capexStr: '26.1', capexYoY: '+105%', outlook: '上修 3・維持 1', origLight: '↗ 偏多', qualityStatus: 'pass', qualityCheck: '通過（毛利淨利雙升、FCF 大增）', revisedJudge: '穩健擴張（偏多）', badgeClass: 'badge-meet' }
+    ];
+
+    let DUAL_TRACK = [
+      { id: 'L0', name: 'L0 弱訊號入口', group: '主鏈', w47: '◐ 觀察', w48: '◐ 觀察', changed: false, reason: '不變', fact: '無一手弱訊號', radar: '警戒', signal: 'TrendForce 11-19：中國 CSP 削減 2027 企業級 SSD 訂單', proxy: '成本曲線破壞者掃描' },
+      { id: 'L1', name: 'L1 終端需求', group: '主鏈', w47: '● 符合', w48: '▲ 超越', changed: true, reason: '因規則修正（v2.1 >70%）', fact: 'NVDA DC 1,076 億 (+110% YoY)', radar: '正常（口徑偏批發）', signal: 'Anthropic IPO 定價 $83、規模 813.4 億', proxy: '升級追蹤：四大雲廠 AI 增量收入 vs CapEx ROI' },
+      { id: 'L2', name: 'L2 雲端資本開支', group: '主鏈', w47: '▲ 超越', w48: '● 符合（暫定）', changed: true, reason: '因規則修正（暫定不適用超越）', fact: '窗內無下修；四家已對帳約 7,300 億，Oracle 缺；Oracle 聲明 OpenAI 合約資金到位', radar: '警戒（融資緊繃）', signal: '四大 CSP 自由現金流轉負壓力仍在，發債規模擴大', proxy: '升級追蹤：CapEx ÷ 營業現金流(OCF) 與淨發債增量' },
+      { id: 'L3', name: 'L3 AI 晶片', group: '主鏈', w47: '▲ 超越', w48: '▲ 超越', changed: false, reason: '不變', fact: 'NVDA Q3 營收 1,158.44 億 (+7.3% 超指引)、GAAP 毛利 74.8%、DC 佔比 92.9%', radar: '黃燈預警', signal: 'Q4 毛利指引 71.0–72.0% 貼著 72% 打臉線（記憶體成本壓力）', proxy: '升級追蹤：Merchant GPU vs Custom ASIC 增速差' },
+      { id: 'L4', name: 'L4 記憶體／HBM', group: '主鏈', w47: '▲ 超越', w48: '◐ 觀察', changed: true, reason: '規則＋資料', fact: 'DRAM/HBM 無一手合約價', radar: '紅燈預警', signal: 'TrendForce 11-19：NAND 現貨回檔逾 20%、1Q27 合約價預估轉跌', proxy: '升級追蹤：三巨頭存貨週轉天數(DIO)與 ASP 季變動' },
+      { id: 'L5', name: 'L5 先進封裝', group: '主鏈', w47: '▲ 超越', w48: '● 符合（暫定）', changed: true, reason: '因規則修正（無新交期）', fact: '產能仍緊，五家台廠 11-22 後無重大訊息', radar: '正常', signal: '精材 11-13 簽訂台積電先進封裝外包協議', proxy: '升級追蹤：CoWoS 供應鏈資本支出與外包擴產' },
+      { id: 'L6', name: 'L6 晶圓代工', group: '主鏈', w47: '▲ 超越', w48: '▲ 超越（沿用）', changed: false, reason: '不變（沿用 3Q26）', fact: '沿用 3Q26 毛利率 66.4%、4Q 指引 65–67%', radar: '黃燈預警', signal: 'FT/Reuters/日經轉引：BIS 新規致台積電暫停部分對中 16nm 以下出貨審查', proxy: '升級追蹤：法說毛利指引斜率＋月營收年增動能' },
+      { id: 'L7a', name: 'L7a 設備', group: '主鏈', w47: '▲ 超越', w48: '▲ 超越', changed: false, reason: '不變', fact: 'SEAJ 10 月 +44.6%；AMAT FY26Q4 +53%', radar: '正常', signal: '訂單動能強勁，但股價隨費半大幅回檔', proxy: '升級追蹤：SEAJ 3MMA＋四大設備商訂單年增' },
+      { id: 'L7b', name: 'L7b 材料', group: '主鏈', w47: '◆ 偏離', w48: '◐ 觀察', changed: true, reason: '因規則修正（需連續兩次一手）', fact: '所有 >15% 漲幅皆為轉引，無一手公告', radar: '紅燈預警', signal: '日系光刻膠 10-01 漲價 15%（ArF 最高 +24%）成本壓力未消退', proxy: '升級追蹤：光阻／矽晶圓大廠法說毛利與漲價函' },
+      { id: 'L8', name: 'L8 電力', group: '主鏈', w47: '◆ 偏離', w48: '◐ 觀察', changed: true, reason: '因規則修正（許可分帳＋缺交期）', fact: 'FERC 冬季尖峰十年增約 245 GW；缺變壓器交期一手', radar: '紅燈預警', signal: '電力實體瓶頸仍在，許可風險已拆至側軌', proxy: '升級追蹤：GEV／VRT／ETN 訂單出貨比(Book-to-Bill)與 Backlog YoY' },
+      { id: 'rate', name: '外生｜利率', group: '側軌', w47: '● 符合', w48: '● 符合', changed: false, reason: '不變', fact: '11-20 美國 10Y 4.92%、2Y 4.63%（區間 4.5–5.5%）', radar: '警戒（貼上緣）', signal: '10 月 FOMC 紀錄顯示近乎全員認為進一步升息可能適當', proxy: '10Y 殖利率＋FOMC 點陣圖中值' },
+      { id: 'reg', name: '外生｜管制／地緣', group: '側軌', w47: '◆ 偏離', w48: '◆ 偏離（延續）', changed: false, reason: '不變（加深）', fact: 'BIS 臨時最終規則 91 FR 74970 於 11-19 生效；遠端算力納管＋新增五國＋16/14nm 推定', radar: '紅燈預警', signal: '中方 11-17 僅外交表態，尚未祭出具體材料反制', proxy: '管制客體、生效日、代工推定範圍' },
+      { id: 'ref', name: '反射性迴路', group: '側軌', w47: '◆ 偏離', w48: '◆ 偏離（延續）', changed: false, reason: '不變（惡化）', fact: 'NVDA 一手稱 neocloud 成長快過信用並提供保證 1,180 億；費半 11-20 單日 -10.73%', radar: '紅燈預警', signal: '買方信用缺口改由供應商保證與融資承接，市場劇烈去風險', proxy: '信用債殖利率、發債規模、費半與擁擠度' }
+    ];
+
+    let BASELINE_V22 = [
+      { id: 'L0', metric: '改寫單位成本曲線的技術或政策', pass: '無數值區間', fail: '出現改曲線技術或政策', diff: '不變', isDiff: false, proxy: '追蹤模型架構效率躍升、專利與政策草案' },
+      { id: 'L1', metric: '龍頭資料中心營收 YoY', pass: '符合 ≥40%；超越 >70%', fail: '連兩季 <30% 或雲 AI 成長低於 CapEx', diff: '不變', isDiff: false, proxy: '改追四大雲廠 AI 增量收入與應用 ARR 對比折舊 ROI' },
+      { id: 'L2', metric: '五大主體全年 CapEx 指引（暫定約 8,200 億）', pass: '暫定，不適用超越通則', fail: '任一主體下修全年指引或受電力制約', diff: '不變（待 Oracle 對帳）', isDiff: false, proxy: '監控 CapEx ÷ OCF 是否逼近/突破 100% 與發債增量' },
+      { id: 'L3', metric: '龍頭營收、指引、DC 佔比、毛利率', pass: '續創高、指引超共識、DC >85%', fail: '毛利率 <72%（實際值）或指引低於共識', diff: '不變', isDiff: false, proxy: '監控 Q4 毛利指引斜率＋Merchant GPU vs Custom ASIC 增速差' },
+      { id: 'L4', metric: '同世代合約價 QoQ（含 DRAM/HBM 與 NAND）', pass: '同世代 +5～25%', fail: '一手現貨鬆動、庫存 >4 週、擴產超預期', diff: 'Q2：明訂含 NAND；研調最多撐觀察', isDiff: true, proxy: '允許 TrendForce 現貨回檔 >15% 觸發領先雷達＋追蹤三巨頭 DIO' },
+      { id: 'L5', metric: 'CoWoS 產能與交期（逾 52 週）', pass: '暫定，無新交期不得升超越', fail: '交期顯著縮短或轉向替代封裝', diff: '不變', isDiff: false, proxy: '追蹤 OSAT（日月光/安靠/精材）先進封裝 CapEx 與外包合約' },
+      { id: 'L6', metric: '台積電毛利率（中心 60%，±3pp 分帶）', pass: '60–63% 符合；>63% 超越（可沿用上季未被推翻一手）', fail: '<57% 或降價／利用率下滑', diff: 'Q1：明訂可沿用最近一季未被推翻一手', isDiff: true, proxy: '盯緊法說下季毛利指引斜率＋月營收年增連三月減速預警' },
+      { id: 'L7a', metric: '設備商營收與 SEAJ 銷售額 YoY', pass: '落後 CapEx 3–9 個月，容忍 ±15%', fail: '訂單年增轉負或需求型出貨遞延', diff: '不變', isDiff: false, proxy: 'SEAJ 3MMA 月頻＋四大設備商訂單年增' },
+      { id: 'L7b', metric: '材料價格年漲幅', pass: '0–10% 符合；10–15% 觀察', fail: '>15% 且連續兩次一手讀數', diff: '不變', isDiff: false, proxy: '允許漲價函／研調觸發領先雷達，同步核對下游客戶毛利指引' },
+      { id: 'L8', metric: '表後供電訂單與變壓器交期', pass: '有一手顯示交期未縮短判符合；無一手預設觀察', fail: '交期明顯縮短或供電計畫延宕', diff: 'Q3：無交期一手預設觀察', isDiff: true, proxy: '直接以 GEV／VRT／ETN 財報 Book-to-Bill 與 Backlog YoY 作一手代理' },
+      { id: 'rate', metric: '美國 10Y 殖利率與政策利率', pass: '10Y 4.5%～5.5%；年底中值 ±25bp', fail: '10Y >5.5% 或 <4.5%；單次升息 >25bp', diff: '不變', isDiff: false, proxy: '10Y 逼近 5.2%+ 與 FOMC 鷹派紀錄觸發警戒' },
+      { id: 'reg', metric: '管制客體、生效日、官方名單', pass: '逐步收緊', fail: '客體顯著擴大、已過生效日、名單增列', diff: 'Q4：代工/OSAT 推定範圍列討論項', isDiff: true, proxy: '追蹤 BIS IFR 執行細則與代工廠合規暫停出貨實況' },
+      { id: 'ref', metric: '敘事→估值→融資→CapEx→財報', pass: '正向循環', fail: '融資成本上升、發債受阻、擁擠度極值', diff: '不變', isDiff: false, proxy: '監控 Neocloud 債券殖利率、供應商融資保證與費半波動' }
+    ];
+
+    let CALENDAR_EVENTS = [
+      { date: '2026-11-23', name: '韓國 11/1–20 半導體出口（關稅廳）', layer: 'L4 / 記錄', cat: 'chain', indicator: '半導體出口 YoY', trigger: '只記錄；建議門檻(<+100%)未核准不當尺（Q5）', status: '待開獎' },
+      { date: '2026-11-25', name: 'EIA 週度 Brent 原油', layer: '外生｜能源', cat: 'exo', indicator: '美元／桶', trigger: '>100 美元持續 4 週 → 能源列觀察', status: '待開獎' },
+      { date: '2026-12-10', name: '台積電 11 月合併營收', layer: 'L6 / L2', cat: 'chain', indicator: '月增減、年增', trigger: '月減 >5% 且年增 <25% → L6 檢討', status: '待開獎' },
+      { date: '2026-12-10 03:00', name: '美國 FOMC 12 月利率決議', layer: '外生｜利率', cat: 'exo', indicator: '利率決議與點陣圖', trigger: '升息 50bp 或點陣圖中值 >4.35% → 利率轉偏離', status: '待開獎' },
+      { date: '2026-12-15（暫估）', name: 'Oracle FY27 Q2 財報（官方日待公布）', layer: 'L2', cat: 'chain', indicator: 'FY27/CY26 CapEx 指引', trigger: '下修 CapEx 指引 → L2 偏離；同步重算 L2 對帳', status: '待開獎' },
+      { date: '2026-12-18', name: '美光 FY26 Q1 財報', layer: 'L4', cat: 'chain', indicator: '毛利率、ASP 與存貨天數', trigger: '合約價轉跌或庫存回升逾 4 週 → L4 偏離', status: '待開獎' },
+      { date: '2026-12-18 14:40', name: 'SEAJ 11 月度設備銷售額', layer: 'L7a', cat: 'chain', indicator: '3MMA 年增率', trigger: '轉負 → L7a 偏離', status: '待開獎' },
+      { date: '2027-02 下旬', name: 'NVIDIA FY27 Q4 財報', layer: 'L3', cat: 'chain', indicator: '實際 GAAP 毛利率', trigger: '實際毛利率 <72% → L3 偏離訊號成立', status: '待開獎' }
+    ];
+
+    let SOURCES_LIST = [
+      { time: '2026-11-23 06:47', tag: '2026-W48｜L1/L3', name: 'NVIDIA FY27Q3 8-K & CFO Commentary (SEC EDGAR)', url: 'https://www.sec.gov/Archives/edgar/data/1045810/000104581026000088/q3fy27cfocommentary.htm', note: '一手財報與 Q4 毛利指引' },
+      { time: '2026-11-23 06:47', tag: '2026-W48｜管制', name: 'Federal Register 91 FR 74970 (BIS IFR)', url: 'https://www.federalregister.gov/documents/2026/11/19/2026-23529/addressing-remote-access-to-advanced-semiconductors', note: '11-19 生效，含遠端算力納管與 16/14nm 推定' }
+    ];
+
+    // ==================== 輔助函式 ====================
+    function parseNum(v) {
+      if (v === null || v === undefined) return null;
+      const cleaned = String(v).replace(/[,$%\s億家]/g, '');
+      const n = parseFloat(cleaned);
+      return Number.isFinite(n) ? n : null;
     }
 
-    function render(data) {
-      STATE = data;
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('sync-time').textContent = '即時同步：' + (data.updatedAt || '');
-
-      const latest = (data.regime || [])[0] || {};
-      document.getElementById('home-issue').textContent = `${latest['期數鍵'] || ''}（${latest['覆蓋期間'] || ''}）`;
-      document.getElementById('home-headline').textContent = latest['首屏一句話結論'] || '—';
-      document.getElementById('home-action').textContent = latest['決策引擎焦點與行動框架'] || '—';
-      document.getElementById('home-badges').innerHTML = `
-        <span class="pill p-up">稽核尺：${latest['稽核尺版號'] || '—'}</span>
-        <span class="pill p-na">${latest['稽核燈號分布(13列)'] || '—'}</span>
-        <span class="pill p-ok">${latest['凍結狀態'] || '—'}</span>
-      `;
-      const regText = latest['市場體制象限(決策引擎)'] || '';
-      document.getElementById('home-regime-title').textContent = regText || '—';
-      document.querySelectorAll('#quad-grid .quad').forEach(q => {
-        q.classList.toggle('now', regText.includes(q.dataset.q));
-      });
-
-      const alerts = (data.monitor || []).filter(r => {
-        const radar = String(r['[決策]領先雷達狀態'] || '');
-        const audit = String(r['[稽核]W48燈號'] || '');
-        return radar.includes('紅燈') || radar.includes('黃燈') || radar.includes('警戒') || audit.includes('偏離');
-      });
-      document.getElementById('tbl-alerts').innerHTML = `
-        <thead><tr><th>層級</th><th>稽核燈號</th><th>決策雷達</th><th>關鍵邊際訊號</th></tr></thead>
-        <tbody>${alerts.map(r => `
-          <tr class="clickable" data-idx="${data.monitor.indexOf(r)}">
-            <td><b>${r['層級名稱']}</b></td>
-            <td>${tonePill(r['[稽核]W48燈號'])}</td>
-            <td>${tonePill(r['[決策]領先雷達狀態'])}</td>
-            <td>${r['[決策]領先訊號與邊際變化(含研調/市場)'] || '—'}</td>
-          </tr>`).join('')}</tbody>`;
-
-      document.getElementById('tbl-checkpoints').innerHTML = `
-        <thead><tr><th>日期(台北)</th><th>事件</th><th>打臉條件</th></tr></thead>
-        <tbody>${(data.checkpoints || []).slice(0, 6).map(c => `
-          <tr>
-            <td class="num" style="white-space:nowrap">${c['預計日期(台北)']}</td>
-            <td><b>${c['事件名稱']}</b><br><small style="color:var(--muted)">${c['影響層級']}</small></td>
-            <td>${c['打臉條件（成立即改判）']}</td>
-          </tr>`).join('')}</tbody>`;
-
-      document.getElementById('tbl-monitor').innerHTML = `
-        <thead><tr><th>層級</th><th>[稽核]W47→W48</th><th>[稽核]變色原因</th><th>[決策]領先雷達</th><th>[決策]領先訊號</th></tr></thead>
-        <tbody>${(data.monitor || []).map((r, i) => `
-          <tr class="clickable" data-idx="${i}">
-            <td><b>${r['層級名稱']}</b><br><small style="color:var(--muted)">${r['分組']}</small></td>
-            <td><small style="color:var(--muted)">${r['[稽核]W47燈號']}</small> → ${tonePill(r['[稽核]W48燈號'])}</td>
-            <td>${r['[稽核]變色原因']}</td>
-            <td>${tonePill(r['[決策]領先雷達狀態'])}</td>
-            <td>${r['[決策]領先訊號與邊際變化(含研調/市場)']}</td>
-          </tr>`).join('')}</tbody>`;
-
-      document.querySelectorAll('tr.clickable').forEach(tr => {
-        tr.addEventListener('click', () => openDrawer(data.monitor[Number(tr.dataset.idx)]));
-      });
-
-      document.getElementById('tbl-cake').innerHTML = `
-        <thead><tr><th>層級</th><th>AI營收(億)</th><th>毛利／淨利</th><th>FCF(億)</th><th>CapEx(億)</th><th>原版燈號</th><th>決策引擎｜品質修正判定</th></tr></thead>
-        <tbody>${(data.cake || []).map(c => `
-          <tr>
-            <td><b>${c['層級']} ${c['名稱']}</b><br><small style="color:var(--muted)">${c['家數']}（可比 ${c['營收可比']}）</small></td>
-            <td class="num"><b>${c['AI相關營收(億美元)']}</b><br><small>${c['營收YoY']}</small></td>
-            <td class="num">${c['全公司毛利率']} (${c['毛利YoY(pp)']}pp)<br><small>${c['全公司淨利率']} (${c['淨利YoY(pp)']}pp)</small></td>
-            <td class="num"><b>${c['全公司自由現金流(億美元)']}</b><br><small>${c['FCF_YoY']}</small></td>
-            <td class="num">${c['全公司資本支出(億美元)']}<br><small>${c['CapEx_YoY']}</small></td>
-            <td>${tonePill(c['[原版]展望燈號'])}</td>
-            <td>${tonePill(c['[決策引擎]修正後判定'])}<br><small style="color:var(--muted)">${c['[決策引擎]現金流品質檢核']}</small></td>
-          </tr>`).join('')}</tbody>`;
-
-      document.getElementById('tbl-ruler').innerHTML = `
-        <thead><tr><th>層級</th><th>[稽核尺 v2.2] 符合／超越</th><th>[稽核尺 v2.2] 偏離紅燈</th><th>[決策引擎] 升級代理指標</th></tr></thead>
-        <tbody>${(data.rulers || []).map(r => `
-          <tr>
-            <td><b>${r['層級']}</b><br><small style="color:var(--muted)">${r['[稽核尺 v2.2]看什麼數字']}</small></td>
-            <td>${r['[稽核尺 v2.2]符合與超越門檻']}</td>
-            <td>${r['[稽核尺 v2.2]偏離紅燈條件']}</td>
-            <td>${r['[決策引擎]升級代理指標與雷達觸發條件']}</td>
-          </tr>`).join('')}</tbody>`;
-
-      document.getElementById('tbl-sources').innerHTML = `
-        <thead><tr><th>時間(台北)</th><th>期數／層級</th><th>來源名稱</th><th>狀態</th><th>快取路徑</th></tr></thead>
-        <tbody>${(data.sources || []).map(s => `
-          <tr>
-            <td class="num" style="white-space:nowrap">${s['取得時間(台北)']}</td>
-            <td>${s['期數']} · ${s['層級']}</td>
-            <td><a href="${s['一手URL']}" target="_blank" style="color:var(--accent)">${s['來源名稱']}</a></td>
-            <td class="num">${s['HTTP狀態']}</td>
-            <td class="num" style="font-size:12px">${s['Drive快取路徑']}</td>
-          </tr>`).join('')}</tbody>`;
-
-      switchView('home');
+    function getAuditBadgeClass(text) {
+      const s = String(text || '');
+      if (s.includes('超越')) return 'badge-exceed';
+      if (s.includes('符合')) return 'badge-meet';
+      if (s.includes('觀察')) return 'badge-watch';
+      if (s.includes('偏離')) return 'badge-deviate';
+      return 'badge-na';
     }
 
-    async function loadData() {
-      const box = document.getElementById('loading');
-      if (!API_URL || API_URL.includes('請貼上')) {
-        box.style.display = 'block';
-        box.textContent = '請先在 index.html 中將 API_URL 替換為你的 Apps Script /exec 網址。';
+    function getRadarBadgeClass(text) {
+      const s = String(text || '');
+      if (s.includes('紅燈')) return 'badge-deviate';
+      if (s.includes('黃燈') || s.includes('警戒')) return 'badge-watch';
+      return 'badge-meet';
+    }
+
+    function formatSignedTw(valStr) {
+      const s = String(valStr || '');
+      if (!s || s === '無可比' || s === '未提供') {
+        return `<span class="text-slate-400">${s || '—'}</span>`;
+      }
+      if (s.startsWith('+')) return `<span class="tw-up font-semibold tabular-nums">${s}</span>`;
+      if (s.startsWith('-')) return `<span class="tw-down font-semibold tabular-nums">${s}</span>`;
+      return `<span class="tabular-nums">${s}</span>`;
+    }
+
+    // ==================== 狀態管理 ====================
+    let selectedCakeId = 'L3';
+    let cakeChartMode = 'revenue';
+    let cakeFilter = 'all';
+    let calFilter = 'all';
+    let expandedRowId = null;
+    let chartPrimary = null;
+    let chartCashflow = null;
+
+    // ==================== 分頁切換 ====================
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('hidden', panel.id !== `tab-${tabName}`);
+      });
+      if (tabName === 'cake') renderCakeCharts();
+    }
+
+    // ==================== 期數下拉選單與總覽渲染 ====================
+    function populatePeriodDropdown() {
+      const sel = document.getElementById('period-select');
+      const prevVal = sel.value;
+      sel.innerHTML = PERIODS_LIST.map((p, idx) =>
+        `<option value="${p.key}">${p.key}${idx === 0 ? '（最新）' : ''}</option>`
+      ).join('');
+      if (PERIODS_LIST.some(p => p.key === prevVal)) {
+        sel.value = prevVal;
+      } else if (PERIODS_LIST.length > 0) {
+        sel.value = PERIODS_LIST[0].key;
+      }
+      renderPeriod(sel.value);
+    }
+
+    function renderPeriod(periodKey) {
+      const p = PERIODS_LIST.find(x => x.key === periodKey) || PERIODS_LIST[0];
+      if (!p) return;
+
+      document.getElementById('hdr-period-badge').textContent = `期數 ${p.key}`;
+      document.getElementById('hdr-rule-badge').textContent = `稽核尺 ${p.ruleShort}`;
+      document.getElementById('hdr-range').textContent = `覆蓋期間：${p.range}`;
+      document.getElementById('overview-period-meta').textContent = `${p.key}（${p.range}）`;
+      document.getElementById('overview-regime-badge').textContent = `★ ${p.regime}`;
+      document.getElementById('overview-headline').textContent = p.headline;
+      document.getElementById('overview-physical').textContent = p.physical;
+      document.getElementById('overview-financial').textContent = p.financial;
+      document.getElementById('overview-framework').textContent = p.framework;
+      document.getElementById('overview-rule-version').textContent = p.rule;
+      document.getElementById('cnt-exceed').textContent = p.counts.exceed;
+      document.getElementById('cnt-meet').textContent = p.counts.meet;
+      document.getElementById('cnt-watch').textContent = p.counts.watch;
+      document.getElementById('cnt-deviate').textContent = p.counts.deviate;
+
+      // 依當期體制自動高亮對應象限
+      let activeQ = 'Q4';
+      if (p.regime.includes('實體強 × 金融順')) activeQ = 'Q1';
+      else if (p.regime.includes('實體弱 × 金融順')) activeQ = 'Q2';
+      else if (p.regime.includes('實體弱 × 金融緊')) activeQ = 'Q3';
+      document.querySelectorAll('.quadrant-box').forEach(box => {
+        box.classList.toggle('active-q', box.dataset.quadrant === activeQ);
+      });
+      selectQuadrant(activeQ);
+    }
+
+    function selectQuadrant(qKey) {
+      document.querySelectorAll('.quadrant-box').forEach(box => {
+        box.classList.toggle('selected-q', box.dataset.quadrant === qKey);
+      });
+      const q = QUADRANTS[qKey];
+      const titleClass = qKey === 'Q4' ? 'text-red-800' : 'text-slate-900';
+      document.getElementById('quadrant-detail').innerHTML =
+        `<span class="font-bold ${titleClass}">${q.title}：</span>${q.desc}`;
+    }
+
+    // ==================== 五層蛋糕渲染 ====================
+    function renderCakeStack() {
+      const container = document.getElementById('cake-stack-list');
+      container.innerHTML = CAKE_LAYERS.map(layer => {
+        const isSel = layer.id === selectedCakeId;
+        return `
+          <button type="button" data-cake-id="${layer.id}"
+            class="cake-layer-btn ${isSel ? 'selected' : ''} w-full text-left border border-slate-200 rounded-lg px-3.5 py-2.5 bg-white hover:border-slate-400 flex items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-900">${layer.id} ${layer.name}</span>
+                <span class="text-[11px] text-slate-500">${layer.companies}</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-0.5 tabular-nums">
+                AI 營收 $${(layer.rev || 0).toLocaleString()} 億（${formatSignedTw(layer.revYoY)}）
+              </div>
+            </div>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded whitespace-nowrap ${layer.badgeClass}">
+              ${layer.revisedJudge.split('（')[0]}
+            </span>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.cake-layer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedCakeId = btn.dataset.cakeId;
+          renderCakeStack();
+        });
+      });
+
+      const cur = CAKE_LAYERS.find(l => l.id === selectedCakeId) || CAKE_LAYERS[0];
+      if (!cur) return;
+      document.getElementById('cake-detail-card').innerHTML = `
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="text-xs text-slate-500 font-medium">${cur.id} 層級深度檢核（${cur.companies}）</div>
+            <div class="text-base font-bold text-slate-900 mt-0.5">${cur.id} ${cur.name}</div>
+          </div>
+          <span class="px-2 py-0.5 text-xs font-semibold rounded ${cur.badgeClass}">${cur.revisedJudge}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 text-xs">
+          <div class="bg-white border border-slate-200 rounded p-2.5">
+            <div class="text-slate-500">AI 相關營收</div>
+            <div class="text-sm font-bold text-slate-900 tabular-nums mt-0.5">$${(cur.rev || 0).toLocaleString()} 億</div>
+            <div class="mt-0.5">YoY ${formatSignedTw(cur.revYoY)}（可比 ${cur.revComp}）</div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded p-2.5">
+            <div class="text-slate-500">毛利率 ／ 淨利率</div>
+            <div class="text-sm font-bold text-slate-900 tabular-nums mt-0.5">${cur.gmStr} ／ ${cur.nmStr}</div>
+            <div class="mt-0.5">毛利 ${formatSignedTw(cur.gmYoY)}</div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded p-2.5">
+            <div class="text-slate-500">全公司自由現金流</div>
+            <div class="text-sm font-bold ${cur.fcf !== null && cur.fcf < 0 ? 'tw-down' : 'text-slate-900'} tabular-nums mt-0.5">${cur.fcfStr === '未提供' ? '未提供' : '$' + cur.fcfStr + ' 億'}</div>
+            <div class="mt-0.5">YoY ${formatSignedTw(cur.fcfYoY)}</div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded p-2.5">
+            <div class="text-slate-500">全公司資本支出</div>
+            <div class="text-sm font-bold text-slate-900 tabular-nums mt-0.5">${cur.capexStr === '未提供' ? '未提供' : '$' + cur.capexStr + ' 億'}</div>
+            <div class="mt-0.5">YoY ${formatSignedTw(cur.capexYoY)}</div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded p-3 text-xs space-y-1.5">
+          <div><span class="font-semibold text-slate-700">公司展望：</span><span class="text-slate-600">${cur.outlook}（原版燈號：${cur.origLight}）</span></div>
+          <div><span class="font-semibold text-slate-700">現金流品質檢核：</span><span class="text-slate-800">${cur.qualityCheck}</span></div>
+        </div>
+      `;
+    }
+
+    function renderCakeCharts() {
+      const ordered = [...CAKE_LAYERS].reverse();
+      const labels = ordered.map(l => `${l.id} ${l.name}`);
+
+      const ctx1 = document.getElementById('chart-cake-primary');
+      if (chartPrimary) chartPrimary.destroy();
+
+      if (cakeChartMode === 'revenue') {
+        chartPrimary = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'AI 相關營收 (億美元)',
+              data: ordered.map(l => l.rev),
+              backgroundColor: ['#15803D', '#1D4ED8', '#B91C1C', '#64748B', '#C2410C'],
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: ctx => `AI 營收：$${Number(ctx.raw).toLocaleString()} 億美元（YoY ${ordered[ctx.dataIndex].revYoY}）` } }
+            },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { color: '#475569' } },
+              x: { grid: { display: false }, ticks: { color: '#0F172A', font: { weight: '600' } } }
+            }
+          }
+        });
+      } else {
+        chartPrimary = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: '全公司毛利率 (%)', data: ordered.map(l => l.gm), backgroundColor: '#1D4ED8', borderRadius: 4 },
+              { label: '全公司淨利率 (%)', data: ordered.map(l => l.nm), backgroundColor: '#64748B', borderRadius: 4 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+              tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}：${ctx.raw === null ? '未提供' : ctx.raw + '%'}` } }
+            },
+            scales: {
+              y: { grid: { color: '#F1F5F9' }, ticks: { color: '#475569', callback: v => v + '%' } },
+              x: { grid: { display: false }, ticks: { color: '#0F172A', font: { weight: '600' } } }
+            }
+          }
+        });
+      }
+
+      const ctx2 = document.getElementById('chart-cake-cashflow');
+      if (chartCashflow) chartCashflow.destroy();
+      chartCashflow = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: '全公司自由現金流 FCF (億美元)',
+              data: ordered.map(l => l.fcf),
+              backgroundColor: ordered.map(l => (l.fcf !== null && l.fcf < 0) ? '#16A34A' : '#1D4ED8'),
+              borderRadius: 4
+            },
+            { label: '全公司資本支出 CapEx (億美元)', data: ordered.map(l => l.capex), backgroundColor: '#CBD5E1', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}：${ctx.raw === null ? '未提供' : '$' + Number(ctx.raw).toLocaleString() + ' 億'}` } }
+          },
+          scales: {
+            y: { grid: { color: '#F1F5F9' }, ticks: { color: '#475569' } },
+            x: { grid: { display: false }, ticks: { color: '#0F172A', font: { weight: '600' } } }
+          }
+        }
+      });
+    }
+
+    function renderCakeTable() {
+      const ordered = [...CAKE_LAYERS].reverse();
+      const rows = ordered.filter(l => cakeFilter === 'all' || l.qualityStatus === cakeFilter);
+      document.getElementById('cake-table-body').innerHTML = rows.map(l => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-3 px-3 whitespace-nowrap">
+            <div class="font-bold text-slate-900">${l.id} ${l.name}</div>
+            <div class="text-[11px] text-slate-500">${l.companies}</div>
+          </td>
+          <td class="py-3 px-3 text-right font-semibold tabular-nums whitespace-nowrap">$${(l.rev || 0).toLocaleString()}</td>
+          <td class="py-3 px-3 text-right whitespace-nowrap">${formatSignedTw(l.revYoY)}<div class="text-[10px] text-slate-400">可比 ${l.revComp}</div></td>
+          <td class="py-3 px-3 text-right whitespace-nowrap tabular-nums">${l.gmStr}<div>${formatSignedTw(l.gmYoY)}</div></td>
+          <td class="py-3 px-3 text-right whitespace-nowrap tabular-nums">${l.nmStr}<div>${formatSignedTw(l.nmYoY)}</div></td>
+          <td class="py-3 px-3 text-right whitespace-nowrap tabular-nums ${l.fcf !== null && l.fcf < 0 ? 'tw-down font-bold' : ''}">${l.fcfStr}<div>${formatSignedTw(l.fcfYoY)}</div></td>
+          <td class="py-3 px-3 text-right whitespace-nowrap tabular-nums">${l.capexStr}<div>${formatSignedTw(l.capexYoY)}</div></td>
+          <td class="py-3 px-3 whitespace-nowrap text-slate-700">${l.origLight}</td>
+          <td class="py-3 px-3">
+            <span class="inline-block px-2 py-0.5 rounded font-semibold ${l.badgeClass}">${l.revisedJudge}</span>
+            <div class="text-[11px] text-slate-600 mt-1">${l.qualityCheck}</div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== 雙軌監測渲染 ====================
+    function renderDualTrack() {
+      const q = document.getElementById('dt-search').value.trim().toLowerCase();
+      const grp = document.getElementById('dt-group').value;
+      const aud = document.getElementById('dt-audit').value;
+      const rad = document.getElementById('dt-radar').value;
+      const chg = document.getElementById('dt-changed-only').checked;
+
+      const filtered = DUAL_TRACK.filter(item => {
+        if (grp !== 'all' && item.group !== grp) return false;
+        if (aud !== 'all' && !item.w48.includes(aud)) return false;
+        if (rad === '紅燈預警' && !item.radar.includes('紅燈')) return false;
+        if (rad === '警戒' && !(item.radar.includes('黃燈') || item.radar.includes('警戒'))) return false;
+        if (rad === '正常' && !item.radar.includes('正常')) return false;
+        if (chg && !item.changed) return false;
+        if (q) {
+          const hay = `${item.id} ${item.name} ${item.fact} ${item.signal} ${item.proxy} ${item.reason}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      document.getElementById('dt-count-label').textContent = `顯示 ${filtered.length} / ${DUAL_TRACK.length} 列`;
+      const tbody = document.getElementById('dt-table-body');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500">無符合篩選條件的監測列，請重設篩選條件。</td></tr>`;
         return;
       }
-      document.getElementById('sync-time').textContent = '更新中…';
+
+      tbody.innerHTML = filtered.map(item => {
+        const isOpen = expandedRowId === item.id;
+        const bl = BASELINE_V22.find(b => b.id === item.id);
+        return `
+          <tr class="hover:bg-slate-50 cursor-pointer dt-row" data-row-id="${item.id}">
+            <td class="py-3 px-3 whitespace-nowrap">
+              <div class="font-bold text-slate-900">${item.name}</div>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">${item.group}</span>
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-slate-400">${item.w47}</span>
+                <span class="text-slate-400">→</span>
+                <span class="px-2 py-0.5 rounded font-semibold ${getAuditBadgeClass(item.w48)}">${item.w48}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap text-slate-600">${item.reason}</td>
+            <td class="py-3 px-3 text-slate-800 max-w-xs">${item.fact}</td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded font-semibold ${getRadarBadgeClass(item.radar)}">${item.radar}</span>
+            </td>
+            <td class="py-3 px-3 text-slate-700 max-w-xs">${item.signal}</td>
+          </tr>
+          ${isOpen ? `
+            <tr class="bg-slate-50">
+              <td colspan="6" class="p-4 border-t border-slate-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  <div class="bg-white border border-slate-200 rounded p-3">
+                    <div class="font-bold text-slate-900 mb-1">升級代理指標追蹤（決策引擎）</div>
+                    <p class="text-slate-700">${item.proxy}</p>
+                  </div>
+                  <div class="bg-white border border-slate-200 rounded p-3">
+                    <div class="font-bold text-slate-900 mb-1">v2.2 基準門檻（W49 起生效）</div>
+                    <p class="text-slate-700">${bl ? bl.pass : '—'}</p>
+                  </div>
+                  <div class="bg-red-50 border border-red-200 rounded p-3">
+                    <div class="font-bold text-red-800 mb-1">偏離紅燈／打臉條件</div>
+                    <p class="text-red-900">${bl ? bl.fail : '—'}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ` : ''}
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('.dt-row').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const rid = tr.dataset.rowId;
+          expandedRowId = expandedRowId === rid ? null : rid;
+          renderDualTrack();
+        });
+      });
+    }
+
+    // ==================== 基準尺、查核日曆、來源渲染 ====================
+    function renderBaseline() {
+      const diffOnly = document.getElementById('bl-diff-only').checked;
+      const rows = BASELINE_V22.filter(b => !diffOnly || b.isDiff);
+      document.getElementById('bl-table-body').innerHTML = rows.map(b => `
+        <tr class="${b.isDiff ? 'bg-blue-50/50' : ''} hover:bg-slate-50">
+          <td class="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">${b.id}</td>
+          <td class="py-3 px-3 text-slate-800">${b.metric}</td>
+          <td class="py-3 px-3 text-slate-700">${b.pass}</td>
+          <td class="py-3 px-3 text-red-800 font-medium">${b.fail}</td>
+          <td class="py-3 px-3 whitespace-nowrap">
+            ${b.isDiff ? `<span class="px-2 py-0.5 rounded font-semibold badge-exceed">${b.diff}</span>` : `<span class="text-slate-500">${b.diff}</span>`}
+          </td>
+          <td class="py-3 px-3 text-slate-700">${b.proxy}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCalendar() {
+      const rows = CALENDAR_EVENTS.filter(ev => calFilter === 'all' || ev.cat === calFilter);
+      document.getElementById('cal-table-body').innerHTML = rows.map(ev => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-3 px-3 font-semibold tabular-nums text-slate-900 whitespace-nowrap">${ev.date}</td>
+          <td class="py-3 px-3 font-semibold text-slate-900">${ev.name}</td>
+          <td class="py-3 px-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-medium text-slate-700">${ev.layer}</span></td>
+          <td class="py-3 px-3 text-slate-700">${ev.indicator}</td>
+          <td class="py-3 px-3 text-red-800 font-medium">${ev.trigger}</td>
+          <td class="py-3 px-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded badge-watch font-semibold">${ev.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSources() {
+      document.getElementById('src-table-body').innerHTML = SOURCES_LIST.map(s => `
+        <tr>
+          <td class="py-2.5 px-3 tabular-nums text-slate-600 whitespace-nowrap">${s.time}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap"><span class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded font-medium">${s.tag}</span></td>
+          <td class="py-2.5 px-3">
+            <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="text-blue-700 font-medium hover:underline">${s.name} ↗</a>
+          </td>
+          <td class="py-2.5 px-3 text-slate-600">${s.note}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== 從 Google Sheets (GAS API) 即時同步 ====================
+    function applyLiveData(data) {
+      if (Array.isArray(data.regime) && data.regime.length) {
+        PERIODS_LIST = data.regime.map(r => {
+          const dist = String(r['稽核燈號分布(13列)'] || '');
+          const pick = (kw) => { const m = dist.match(new RegExp(kw + '\\s*(\\d+)')); return m ? Number(m[1]) : 0; };
+          return {
+            key: r['期數鍵'] || '',
+            range: r['覆蓋期間'] || '',
+            ruleShort: r['稽核尺版號'] || '',
+            rule: `判定尺：${r['稽核尺版號'] || ''}｜${r['凍結狀態'] || ''}`,
+            regime: r['市場體制象限(決策引擎)'] || '',
+            headline: r['首屏一句話結論'] || '',
+            physical: r['實體鏈動能(L1-L8)'] || '',
+            financial: r['金融與外生壓力'] || '',
+            framework: r['決策引擎焦點與行動框架'] || '',
+            counts: { exceed: pick('超越'), meet: pick('符合'), watch: pick('觀察'), deviate: pick('偏離') }
+          };
+        });
+      }
+
+      if (Array.isArray(data.cake) && data.cake.length) {
+        const order = { L5: 1, L4: 2, L3: 3, L2: 4, L1: 5 };
+        CAKE_LAYERS = data.cake.map(c => {
+          const chk = String(c['[決策引擎]現金流品質檢核'] || '');
+          const judge = String(c['[決策引擎]修正後判定'] || '');
+          let qStat = 'pass', bCls = 'badge-meet';
+          if (chk.includes('否決')) { qStat = 'warn'; bCls = 'badge-deviate'; }
+          else if (chk.includes('黃燈') || chk.includes('警戒')) { qStat = 'warn'; bCls = 'badge-watch'; }
+          else if (chk.includes('樣本不足') || judge.includes('不判')) { qStat = 'na'; bCls = 'badge-na'; }
+          else if (judge.includes('強偏多') || judge.includes('核心')) { qStat = 'pass'; bCls = 'badge-exceed'; }
+
+          return {
+            id: c['層級'], name: c['名稱'], companies: c['家數'],
+            rev: parseNum(c['AI相關營收(億美元)']) || 0, revYoY: c['營收YoY'], revComp: c['營收可比'],
+            gm: parseNum(c['全公司毛利率']), gmStr: c['全公司毛利率'], gmYoY: c['毛利YoY(pp)'] === '無可比' ? '無可比' : (c['毛利YoY(pp)'] + ' pp'),
+            nm: parseNum(c['全公司淨利率']), nmStr: c['全公司淨利率'], nmYoY: c['淨利YoY(pp)'] === '無可比' ? '無可比' : (c['淨利YoY(pp)'] + ' pp'),
+            fcf: parseNum(c['全公司自由現金流(億美元)']), fcfStr: c['全公司自由現金流(億美元)'], fcfYoY: c['FCF_YoY'],
+            capex: parseNum(c['全公司資本支出(億美元)']), capexStr: c['全公司資本支出(億美元)'], capexYoY: c['CapEx_YoY'],
+            outlook: c['公司展望'], origLight: c['[原版]展望燈號'],
+            qualityStatus: qStat, qualityCheck: chk, revisedJudge: judge, badgeClass: bCls
+          };
+        }).sort((a, b) => (order[a.id] || 9) - (order[b.id] || 9));
+      }
+
+      if (Array.isArray(data.monitor) && data.monitor.length) {
+        DUAL_TRACK = data.monitor.map(m => ({
+          id: m['層級ID'], name: m['層級名稱'], group: m['分組'],
+          w47: m['[稽核]W47燈號'], w48: m['[稽核]W48燈號'],
+          changed: !String(m['[稽核]變色原因'] || '').startsWith('不變'),
+          reason: m['[稽核]變色原因'], fact: m['[稽核]一手事實摘要'],
+          radar: m['[決策]領先雷達狀態'], signal: m['[決策]領先訊號與邊際變化(含研調/市場)'],
+          proxy: m['[決策]升級代理指標追蹤']
+        }));
+      }
+
+      if (Array.isArray(data.rulers) && data.rulers.length) {
+        BASELINE_V22 = data.rulers.map(r => ({
+          id: r['層級'], metric: r['[稽核尺 v2.2]看什麼數字'],
+          pass: r['[稽核尺 v2.2]符合與超越門檻'], fail: r['[稽核尺 v2.2]偏離紅燈條件'],
+          diff: r['[稽核尺 v2.2]相對 v2.1 異動'],
+          isDiff: !String(r['[稽核尺 v2.2]相對 v2.1 異動'] || '').startsWith('不變'),
+          proxy: r['[決策引擎]升級代理指標與雷達觸發條件']
+        }));
+      }
+
+      if (Array.isArray(data.checkpoints) && data.checkpoints.length) {
+        CALENDAR_EVENTS = data.checkpoints.map(c => ({
+          date: c['預計日期(台北)'], name: c['事件名稱'], layer: c['影響層級'],
+          cat: String(c['影響層級'] || '').includes('外生') ? 'exo' : 'chain',
+          indicator: c['觀察指標'], trigger: c['打臉條件（成立即改判）'], status: c['狀態']
+        }));
+      }
+
+      if (Array.isArray(data.sources) && data.sources.length) {
+        SOURCES_LIST = data.sources.map(s => ({
+          time: s['取得時間(台北)'], tag: `${s['期數']}｜${s['層級']}`,
+          name: s['來源名稱'], url: s['一手URL'], note: s['備註']
+        }));
+      }
+
+      populatePeriodDropdown();
+      renderCakeStack();
+      renderCakeTable();
+      if (!document.getElementById('tab-cake').classList.contains('hidden')) renderCakeCharts();
+      renderDualTrack();
+      renderBaseline();
+      renderCalendar();
+      renderSources();
+    }
+
+    async function syncFromCloud() {
+      const statusEl = document.getElementById('sync-status');
+      if (!API_URL || API_URL.includes('請貼上')) {
+        statusEl.textContent = '目前顯示內建快照（貼上 GAS API_URL 即可雲端同步）';
+        return;
+      }
+      statusEl.textContent = '正在同步雲端「00_核心資料庫」…';
       try {
         const res = await fetch(API_URL, { redirect: 'follow' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        render(data);
+        applyLiveData(data);
+        statusEl.textContent = `雲端即時同步：${data.updatedAt || '已完成'}（台北時間）`;
       } catch (err) {
-        box.style.display = 'block';
-        box.textContent = '讀取資料庫失敗：' + err.message + '（請確認 Apps Script 部署權限為「所有人」）';
+        statusEl.textContent = `雲端同步失敗（顯示內建快照）：${err.message}`;
       }
     }
 
-    loadData();
+    // ==================== 事件綁定與初始化 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.getElementById('period-select').addEventListener('change', e => {
+        renderPeriod(e.target.value);
+      });
+
+      document.getElementById('btn-refresh').addEventListener('click', syncFromCloud);
+
+      document.querySelectorAll('.quadrant-box').forEach(box => {
+        box.addEventListener('click', () => selectQuadrant(box.dataset.quadrant));
+      });
+
+      document.querySelectorAll('.cake-chart-mode').forEach(btn => {
+        btn.addEventListener('click', () => {
+          cakeChartMode = btn.dataset.mode;
+          document.querySelectorAll('.cake-chart-mode').forEach(b => {
+            b.className = b.dataset.mode === cakeChartMode
+              ? 'cake-chart-mode px-2 py-1 rounded bg-white text-slate-900 font-semibold border border-slate-200'
+              : 'cake-chart-mode px-2 py-1 rounded text-slate-600';
+          });
+          renderCakeCharts();
+        });
+      });
+
+      document.querySelectorAll('.cake-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          cakeFilter = btn.dataset.filter;
+          document.querySelectorAll('.cake-filter-btn').forEach(b => {
+            b.className = b.dataset.filter === cakeFilter
+              ? 'cake-filter-btn px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-white'
+              : 'cake-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200';
+          });
+          renderCakeTable();
+        });
+      });
+
+      ['dt-search', 'dt-group', 'dt-audit', 'dt-radar', 'dt-changed-only'].forEach(id => {
+        document.getElementById(id).addEventListener('input', renderDualTrack);
+        document.getElementById(id).addEventListener('change', renderDualTrack);
+      });
+
+      document.getElementById('dt-reset-btn').addEventListener('click', () => {
+        document.getElementById('dt-search').value = '';
+        document.getElementById('dt-group').value = 'all';
+        document.getElementById('dt-audit').value = 'all';
+        document.getElementById('dt-radar').value = 'all';
+        document.getElementById('dt-changed-only').checked = false;
+        expandedRowId = null;
+        renderDualTrack();
+      });
+
+      document.getElementById('bl-diff-only').addEventListener('change', renderBaseline);
+
+      document.querySelectorAll('.cal-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          calFilter = btn.dataset.cal;
+          document.querySelectorAll('.cal-filter-btn').forEach(b => {
+            b.className = b.dataset.cal === calFilter
+              ? 'cal-filter-btn px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 text-white'
+              : 'cal-filter-btn px-2.5 py-1 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-200';
+          });
+          renderCalendar();
+        });
+      });
+
+      // 先以內建快照瞬間渲染，接著背景同步雲端資料庫
+      populatePeriodDropdown();
+      renderCakeStack();
+      renderCakeTable();
+      renderDualTrack();
+      renderBaseline();
+      renderCalendar();
+      renderSources();
+      syncFromCloud();
+    });
   </script>
 </body>
 </html>
